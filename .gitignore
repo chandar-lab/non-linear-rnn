@@ -1,0 +1,6 @@
+__pycache__/
+.venv/
+runs/
+data/
+wandb/
+.ipynb_checkpoints/

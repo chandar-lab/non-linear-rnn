@@ -1,0 +1,15 @@
+[project]
+name = "non-linear-rnn"
+version = "0.1.0"
+description = "Experiments with non-linear and less common RNN architectures on synthetic tasks."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.26",
+    "rich>=13.7",
+    "torch>=2.5",
+    "wandb>=0.18",
+]
+
+[tool.uv]
+package = false
