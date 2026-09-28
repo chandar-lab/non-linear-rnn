@@ -1,9 +1,6 @@
 # non-linear-rnn
 
-Revisiting non-linear and less common RNN architectures (starting with the Non-saturating Recurrent Unit)
-on synthetic long-range memory tasks and psMNIST, alongside GRU and LSTM baselines. Everything is PyTorch,
-every task is tokens in / classes out with a loss mask, and every training run is fully described by one
-JSON config.
+Revisiting non-linear RNNs
 
 ## Setup
 
