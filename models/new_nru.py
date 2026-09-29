@@ -19,7 +19,7 @@ class RMSNorm(nn.Module):
         out = x.float() * torch.rsqrt(x.float().pow(2).mean(-1, keepdim=True) + self.eps)
         return out.type_as(x) * self.weight
 
-class NRUCell(nn.Module):
+class NewNRUCell(nn.Module):
     def __init__(self, embed_size, memory_size, num_heads):
         super().__init__()
         self.memory_size = memory_size
@@ -55,7 +55,7 @@ class NRUCell(nn.Module):
         m = m + (a * w - b * e).mean(dim=1)
         return h, m
 
-class NRU(nn.Module):
+class NewNRU(nn.Module):
     """Multi-layer, batch-first NRU. State is (hidden, memory), each (num_layers, batch, size)."""
     def __init__(self, embed_size, num_layers, memory_size=50, num_heads=2, chunk_size=16, compile=False):
         super().__init__()
@@ -63,7 +63,7 @@ class NRU(nn.Module):
         self.memory_size = memory_size
         self.num_layers = num_layers
         self.chunk_size = chunk_size
-        self.cells = nn.ModuleList([NRUCell(embed_size, memory_size, num_heads) for _ in range(num_layers)])
+        self.cells = nn.ModuleList([NewNRUCell(embed_size, memory_size, num_heads) for _ in range(num_layers)])
         self.in_norms = nn.ModuleList([RMSNorm(embed_size) for _ in range(num_layers)])
         self.out_norm = RMSNorm(embed_size)
         # Compiling a fixed-size chunk of time steps keeps cross-step fusion without the very slow
@@ -97,12 +97,12 @@ class NRU(nn.Module):
             outputs.append(out)
         return torch.cat(outputs, dim=1), (hidden, memory)
 
-class NRUModel(nn.Module):
+class NewNRUModel(nn.Module):
     def __init__(self, vocab_size, output_size, embed_size, num_layers, memory_size=50, num_heads=2,
                  chunk_size=16, compile=False):
         super().__init__()
         self.embedding = nn.Embedding(vocab_size, embed_size)
-        self.rnn = NRU(embed_size, num_layers, memory_size, num_heads, chunk_size, compile)
+        self.rnn = NewNRU(embed_size, num_layers, memory_size, num_heads, chunk_size, compile)
         self.head = nn.Linear(embed_size, output_size, bias=False)
 
     def forward(self, idx, state=None):

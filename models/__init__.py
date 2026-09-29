@@ -1,10 +1,12 @@
 from .fast_lstm import FastLSTMModel
 from .gru import GRUModel
 from .lstm import LSTMModel
-from .nru import NRUModel
+from .new_nru import NewNRUModel
+from .original_nru import OriginalNRUModel
 
 MODELS = {
-    "nru": NRUModel,
+    "new_nru": NewNRUModel,
+    "original_nru": OriginalNRUModel,
     "gru": GRUModel,
     "lstm": LSTMModel,
     "fast_lstm": FastLSTMModel,

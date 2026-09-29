@@ -44,7 +44,7 @@ class LSTM(nn.Module):
             for _ in range(num_layers)
         ])
         self.out_norm = RMSNorm(embed_size)
-        # See models/nru.py for why time steps are compiled in chunks.
+        # See models/new_nru.py for why time steps are compiled in chunks.
         if compile:
             torch._dynamo.config.cache_size_limit = max(torch._dynamo.config.cache_size_limit, 64)
             self.run_chunk = torch.compile(self._run_chunk, dynamic=False)

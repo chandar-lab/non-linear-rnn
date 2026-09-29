@@ -1,0 +1,49 @@
+{
+  "name": "new_nru_copy",
+  "seed": 79,
+  "task": {
+    "name": "copy",
+    "num_bits": 8,
+    "min_len": 1,
+    "max_len": 20
+  },
+  "data": {
+    "mode": "stream",
+    "path": null,
+    "num_train": 1000000,
+    "num_val": 2048,
+    "seed": 0
+  },
+  "model": {
+    "name": "new_nru",
+    "embed_size": 64,
+    "num_layers": 1,
+    "memory_size": 64,
+    "num_heads": 4,
+    "chunk_size": 8,
+    "compile": true
+  },
+  "train": {
+    "batch_size": 10,
+    "total_steps": 100000,
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "lr_schedule": "constant",
+    "warmup_steps": 0,
+    "max_grad_norm": 1,
+    "bf16": false,
+    "log_interval": 10,
+    "print_interval": 100,
+    "eval_interval": 1000,
+    "eval_batch_size": 256,
+    "ckpt_interval": 5000
+  },
+  "wandb": {
+    "enabled": true,
+    "project": "non-linear-rnn",
+    "group": "copy",
+    "tags": [
+      "new_nru"
+    ]
+  }
+}

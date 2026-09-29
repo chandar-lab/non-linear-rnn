@@ -1,12 +1,13 @@
 {
-  "name": "nru_associative_recall",
+  "name": "new_nru_copying",
   "seed": 79,
   "task": {
-    "name": "associative_recall",
-    "num_bits": 8,
-    "min_len": 2,
-    "max_len": 6,
-    "block_len": 3
+    "name": "copying_memory",
+    "seq_len": 10,
+    "time_lag_min": 100,
+    "time_lag_max": 100,
+    "num_digits": 8,
+    "num_noise_digits": 1
   },
   "data": {
     "mode": "stream",
@@ -16,7 +17,7 @@
     "seed": 0
   },
   "model": {
-    "name": "nru",
+    "name": "new_nru",
     "embed_size": 64,
     "num_layers": 1,
     "memory_size": 64,
@@ -42,9 +43,9 @@
   "wandb": {
     "enabled": true,
     "project": "non-linear-rnn",
-    "group": "associative_recall",
+    "group": "copying_memory",
     "tags": [
-      "nru"
+      "new_nru"
     ]
   }
 }

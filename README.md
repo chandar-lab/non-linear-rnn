@@ -16,20 +16,20 @@ Run everything through `uv run ...` (or activate `.venv` yourself).
 ## Quick start
 
 ```bash
-# train NRU on the copying memory task (configs/nru_<task>.json exist for every task)
-uv run train.py configs/nru_copying.json
+# train NRU on the copying memory task (configs/{new,original}_nru_<task>.json exist for every task)
+uv run train.py configs/original_nru_copying.json
 
 # same task with another architecture: replace the whole model section
-uv run train.py configs/nru_psmnist.json --set 'model={"name":"lstm","embed_size":64,"num_layers":2}'
+uv run train.py configs/new_nru_psmnist.json --set 'model={"name":"lstm","embed_size":64,"num_layers":2}'
 
 # same run with some values overridden from the CLI
-uv run train.py configs/nru_copying.json --set train.lr=3e-4 task.time_lag_max=200 wandb.enabled=false
+uv run train.py configs/new_nru_copying.json --set train.lr=3e-4 task.time_lag_max=200 wandb.enabled=false
 
 # on a Mac / CPU, disable torch.compile
 uv run train.py configs/gru_copying.json --set model.compile=false
 
 # resume an interrupted run (optionally extend it)
-uv run train.py --resume runs/nru_copying_20260926-120000 --set train.total_steps=200000
+uv run train.py --resume runs/new_nru_copying_20260926-120000 --set train.total_steps=200000
 ```
 
 ## Project layout
@@ -40,7 +40,8 @@ logger.py             rich CLI log + wandb logging
 configs/              one JSON per run: task, data, model, train, wandb
 models/
   __init__.py         name -> model class registry, build_model()
-  nru.py              Non-saturating Recurrent Unit
+  original_nru.py     Non-saturating Recurrent Unit as in Chandar et al. (2019)
+  new_nru.py          revised NRU (pre-norm residual stacking, low-rank write / erase projections)
   gru.py              GRU (reset-after, same equations as torch.nn.GRU)
   lstm.py             LSTM (forget bias init 1)
   fast_lstm.py        LSTM with the fast forget gate sigmoid(sinh(z)) (Ohno et al., 2023)
@@ -85,7 +86,8 @@ Each architecture lives in its own self-contained file.
 
 | model  | specific hyperparameters                                  | params (embed 32, 3 layers) |
 |--------|-----------------------------------------------------------|-----------------------------|
-| `nru`  | `memory_size` (50), `num_heads` (2); `num_heads * memory_size` must be a perfect square | 27.4k |
+| `original_nru` | `memory_size` (64), `num_heads` (4); `num_heads * memory_size` must be a perfect square (outer product trick) | 27.6k (embed 64, 1 layer) |
+| `new_nru` | `memory_size` (50), `num_heads` (2) | 23.2k (embed 64, 1 layer) |
 | `gru`  | `hidden_size` (defaults to `embed_size`)                  | 19.7k |
 | `lstm` | `hidden_size` (defaults to `embed_size`), `forget_bias` (1.0) | 25.7k |
 | `fast_lstm` | same as `lstm`; the forget bias starts at `asinh(forget_bias)`, so the initial gate matches a sigmoid LSTM | same as `lstm` |
@@ -116,7 +118,7 @@ and adding values become digits.
 | psMNIST | `psmnist` | last step | `permute` true, `permutation_seed` 0 | pixel intensities 0–255 are tokens (the paper feeds real values) |
 
 **Samples.** Below is one validation example per task, verbatim as generated with the settings of
-`configs/nru_<task>.json`: `x` is input tokens, `y` is targets, `mask` marks loss positions. Every run
+`configs/*_nru_<task>.json`: `x` is input tokens, `y` is targets, `mask` marks loss positions. Every run
 also prints the first 3 validation examples like this before training starts.
 
 <details>

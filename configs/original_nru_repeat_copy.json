@@ -1,20 +1,23 @@
 {
-  "name": "nru_psmnist",
+  "name": "original_nru_repeat_copy",
   "seed": 79,
   "task": {
-    "name": "psmnist",
-    "permute": true,
-    "permutation_seed": 0
+    "name": "repeat_copy",
+    "num_bits": 8,
+    "min_len": 1,
+    "max_len": 10,
+    "min_repeat": 1,
+    "max_repeat": 10
   },
   "data": {
     "mode": "stream",
     "path": null,
     "num_train": 1000000,
-    "num_val": 5000,
+    "num_val": 2048,
     "seed": 0
   },
   "model": {
-    "name": "nru",
+    "name": "original_nru",
     "embed_size": 64,
     "num_layers": 1,
     "memory_size": 64,
@@ -40,9 +43,9 @@
   "wandb": {
     "enabled": true,
     "project": "non-linear-rnn",
-    "group": "psmnist",
+    "group": "repeat_copy",
     "tags": [
-      "nru"
+      "original_nru"
     ]
   }
 }

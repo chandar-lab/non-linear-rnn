@@ -1,9 +1,12 @@
 {
-  "name": "nru_adding",
+  "name": "new_nru_associative_recall",
   "seed": 79,
   "task": {
-    "name": "adding",
-    "seq_len": 100
+    "name": "associative_recall",
+    "num_bits": 8,
+    "min_len": 2,
+    "max_len": 6,
+    "block_len": 3
   },
   "data": {
     "mode": "stream",
@@ -13,7 +16,7 @@
     "seed": 0
   },
   "model": {
-    "name": "nru",
+    "name": "new_nru",
     "embed_size": 64,
     "num_layers": 1,
     "memory_size": 64,
@@ -39,9 +42,9 @@
   "wandb": {
     "enabled": true,
     "project": "non-linear-rnn",
-    "group": "adding",
+    "group": "associative_recall",
     "tags": [
-      "nru"
+      "new_nru"
     ]
   }
 }

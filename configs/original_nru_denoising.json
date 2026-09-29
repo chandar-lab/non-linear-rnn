@@ -1,13 +1,13 @@
 {
-  "name": "nru_repeat_copy",
+  "name": "original_nru_denoising",
   "seed": 79,
   "task": {
-    "name": "repeat_copy",
-    "num_bits": 8,
-    "min_len": 1,
-    "max_len": 10,
-    "min_repeat": 1,
-    "max_repeat": 10
+    "name": "denoising",
+    "seq_len": 10,
+    "time_lag_min": 100,
+    "time_lag_max": 100,
+    "num_digits": 8,
+    "num_noise_digits": 1
   },
   "data": {
     "mode": "stream",
@@ -17,7 +17,7 @@
     "seed": 0
   },
   "model": {
-    "name": "nru",
+    "name": "original_nru",
     "embed_size": 64,
     "num_layers": 1,
     "memory_size": 64,
@@ -43,9 +43,9 @@
   "wandb": {
     "enabled": true,
     "project": "non-linear-rnn",
-    "group": "repeat_copy",
+    "group": "denoising",
     "tags": [
-      "nru"
+      "original_nru"
     ]
   }
 }

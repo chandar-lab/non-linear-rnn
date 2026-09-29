@@ -1,23 +1,20 @@
 {
-  "name": "nru_denoising",
+  "name": "original_nru_psmnist",
   "seed": 79,
   "task": {
-    "name": "denoising",
-    "seq_len": 10,
-    "time_lag_min": 100,
-    "time_lag_max": 100,
-    "num_digits": 8,
-    "num_noise_digits": 1
+    "name": "psmnist",
+    "permute": true,
+    "permutation_seed": 0
   },
   "data": {
     "mode": "stream",
     "path": null,
     "num_train": 1000000,
-    "num_val": 2048,
+    "num_val": 5000,
     "seed": 0
   },
   "model": {
-    "name": "nru",
+    "name": "original_nru",
     "embed_size": 64,
     "num_layers": 1,
     "memory_size": 64,
@@ -43,9 +40,9 @@
   "wandb": {
     "enabled": true,
     "project": "non-linear-rnn",
-    "group": "denoising",
+    "group": "psmnist",
     "tags": [
-      "nru"
+      "original_nru"
     ]
   }
 }

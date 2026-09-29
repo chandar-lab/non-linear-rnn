@@ -1,11 +1,9 @@
 {
-  "name": "nru_copy",
+  "name": "new_nru_adding",
   "seed": 79,
   "task": {
-    "name": "copy",
-    "num_bits": 8,
-    "min_len": 1,
-    "max_len": 20
+    "name": "adding",
+    "seq_len": 100
   },
   "data": {
     "mode": "stream",
@@ -15,7 +13,7 @@
     "seed": 0
   },
   "model": {
-    "name": "nru",
+    "name": "new_nru",
     "embed_size": 64,
     "num_layers": 1,
     "memory_size": 64,
@@ -41,9 +39,9 @@
   "wandb": {
     "enabled": true,
     "project": "non-linear-rnn",
-    "group": "copy",
+    "group": "adding",
     "tags": [
-      "nru"
+      "new_nru"
     ]
   }
 }

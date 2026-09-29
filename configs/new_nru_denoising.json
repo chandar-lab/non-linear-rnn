@@ -1,0 +1,51 @@
+{
+  "name": "new_nru_denoising",
+  "seed": 79,
+  "task": {
+    "name": "denoising",
+    "seq_len": 10,
+    "time_lag_min": 100,
+    "time_lag_max": 100,
+    "num_digits": 8,
+    "num_noise_digits": 1
+  },
+  "data": {
+    "mode": "stream",
+    "path": null,
+    "num_train": 1000000,
+    "num_val": 2048,
+    "seed": 0
+  },
+  "model": {
+    "name": "new_nru",
+    "embed_size": 64,
+    "num_layers": 1,
+    "memory_size": 64,
+    "num_heads": 4,
+    "chunk_size": 8,
+    "compile": true
+  },
+  "train": {
+    "batch_size": 10,
+    "total_steps": 100000,
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "lr_schedule": "constant",
+    "warmup_steps": 0,
+    "max_grad_norm": 1,
+    "bf16": false,
+    "log_interval": 10,
+    "print_interval": 100,
+    "eval_interval": 1000,
+    "eval_batch_size": 256,
+    "ckpt_interval": 5000
+  },
+  "wandb": {
+    "enabled": true,
+    "project": "non-linear-rnn",
+    "group": "denoising",
+    "tags": [
+      "new_nru"
+    ]
+  }
+}
