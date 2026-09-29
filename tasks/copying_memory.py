@@ -19,7 +19,7 @@ from .base import Task
 
 class CopyingMemory(Task):
     def __init__(self, seq_len=10, time_lag_min=100, time_lag_max=100, num_digits=8, num_noise_digits=1,
-                 mask_recall_only=False):
+                 mask_recall_only=True):
         self.seq_len = seq_len
         self.time_lag_min = time_lag_min
         self.time_lag_max = time_lag_max
