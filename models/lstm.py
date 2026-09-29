@@ -57,9 +57,12 @@ class LSTM(nn.Module):
         for t in range(x.size(1)):
             u = x[:, t]
             for i, cell in enumerate(self.cells):
-                hidden[i], cell_state[i] = cell(self.in_norms[i](u), hidden[i], cell_state[i])
-                u = u + self.out_projs[i](hidden[i])
-            outputs.append(self.out_norm(u))
+                # hidden[i], cell_state[i] = cell(self.in_norms[i](u), hidden[i], cell_state[i])
+                hidden[i], cell_state[i] = cell(u, hidden[i], cell_state[i])
+                # u = u + self.out_projs[i](hidden[i])
+                u = self.out_projs[i](hidden[i])
+            # outputs.append(self.out_norm(u))
+            outputs.append(u)
         return torch.stack(outputs, dim=1), torch.stack(hidden), torch.stack(cell_state)
 
     def forward(self, x, state=None):

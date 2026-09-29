@@ -24,29 +24,34 @@ class NRUCell(nn.Module):
         super().__init__()
         self.memory_size = memory_size
         self.num_heads = num_heads
-        self.rank = math.isqrt(num_heads * memory_size)
-        assert self.rank ** 2 == num_heads * memory_size, "num_heads * memory_size must be a perfect square"
+        self.rank = 8
         self.Wi = nn.Linear(embed_size, embed_size)
         self.Wh = nn.Linear(embed_size, embed_size)
         self.Wc = nn.Linear(memory_size, embed_size)
         feature_size = 2 * embed_size + memory_size
         self.f_ab = nn.Linear(feature_size, 2 * num_heads)  # write / erase strengths
-        self.f_w = nn.Linear(feature_size, 2 * self.rank)   # write vector factors p, q
-        self.f_e = nn.Linear(feature_size, 2 * self.rank)   # erase vector factors p, q
+        # Use low rank weights for f_w and f_e
+        self.f_w_a = nn.Parameter(torch.empty(self.rank, feature_size))
+        self.f_w_b = nn.Parameter(torch.empty(self.num_heads * self.memory_size, self.rank))
+        self.b_w = nn.Parameter(torch.zeros(self.num_heads * self.memory_size))
+        self.f_e_a = nn.Parameter(torch.empty(self.rank, feature_size))
+        self.f_e_b = nn.Parameter(torch.empty(self.num_heads * self.memory_size, self.rank))
+        self.b_e = nn.Parameter(torch.zeros(self.num_heads * self.memory_size))
         self.norm_h = RMSNorm(embed_size)
         self.norm_m = RMSNorm(memory_size)
 
-    def _outer(self, pq):
-        p, q = pq.chunk(2, dim=-1)
-        out = p.unsqueeze(-1) * q.unsqueeze(-2) / math.sqrt(self.num_heads * self.memory_size)
-        return out.reshape(-1, self.num_heads, self.memory_size)
-
+        with torch.no_grad():
+            nn.init.kaiming_uniform_(self.f_w_a, a=math.sqrt(5))
+            nn.init.kaiming_uniform_(self.f_w_b, a=math.sqrt(5))
+            nn.init.kaiming_uniform_(self.f_e_a, a=math.sqrt(5))
+            nn.init.kaiming_uniform_(self.f_e_b, a=math.sqrt(5))
+    
     def forward(self, x, h, m):
         h = F.relu(self.Wi(x) + self.Wh(h) + self.Wc(m))
         features = torch.cat([x, self.norm_h(h), self.norm_m(m)], dim=-1)
         a, b = F.relu(self.f_ab(features)).unsqueeze(-1).chunk(2, dim=1)
-        w = F.relu(self._outer(self.f_w(features)))
-        e = F.relu(self._outer(self.f_e(features)))
+        w = F.relu(F.linear(features, self.f_w_b @ self.f_w_a) + self.b_w).view(-1, self.num_heads, self.memory_size)
+        e = F.relu(F.linear(features, self.f_e_b @ self.f_e_a) + self.b_e).view(-1, self.num_heads, self.memory_size)
         m = m + (a * w - b * e).mean(dim=1)
         return h, m
 

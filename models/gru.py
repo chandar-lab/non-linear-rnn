@@ -57,9 +57,12 @@ class GRU(nn.Module):
         for t in range(x.size(1)):
             u = x[:, t]
             for i, cell in enumerate(self.cells):
-                hidden[i] = cell(self.in_norms[i](u), hidden[i])
-                u = u + self.out_projs[i](hidden[i])
-            outputs.append(self.out_norm(u))
+                # hidden[i] = cell(self.in_norms[i](u), hidden[i])
+                hidden[i] = cell(u, hidden[i])
+                # u = u + self.out_projs[i](hidden[i])
+                u = self.out_projs[i](hidden[i])
+            # outputs.append(self.out_norm(u))
+            outputs.append(u)
         return torch.stack(outputs, dim=1), torch.stack(hidden)
 
     def forward(self, x, state=None):
