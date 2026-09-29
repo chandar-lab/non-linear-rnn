@@ -43,6 +43,7 @@ models/
   nru.py              Non-saturating Recurrent Unit
   gru.py              GRU (reset-after, same equations as torch.nn.GRU)
   lstm.py             LSTM (forget bias init 1)
+  fast_lstm.py        LSTM with the fast forget gate sigmoid(sinh(z)) (Ohno et al., 2023)
 tasks/
   __init__.py         name -> task class registry, build_task()
   base.py             Task interface (tokens in, classes out, loss mask)
@@ -87,6 +88,7 @@ Each architecture lives in its own self-contained file.
 | `nru`  | `memory_size` (50), `num_heads` (2); `num_heads * memory_size` must be a perfect square | 27.4k |
 | `gru`  | `hidden_size` (defaults to `embed_size`)                  | 19.7k |
 | `lstm` | `hidden_size` (defaults to `embed_size`), `forget_bias` (1.0) | 25.7k |
+| `fast_lstm` | same as `lstm`; the forget bias starts at `asinh(forget_bias)`, so the initial gate matches a sigmoid LSTM | same as `lstm` |
 
 Shared model keys: `name`, `embed_size`, `num_layers`, `chunk_size` (16), `compile` (false). When
 `hidden_size != embed_size`, GRU/LSTM add a linear projection back into the residual stream.

@@ -1,3 +1,4 @@
+from .fast_lstm import FastLSTMModel
 from .gru import GRUModel
 from .lstm import LSTMModel
 from .nru import NRUModel
@@ -6,6 +7,7 @@ MODELS = {
     "nru": NRUModel,
     "gru": GRUModel,
     "lstm": LSTMModel,
+    "fast_lstm": FastLSTMModel,
 }
 
 
