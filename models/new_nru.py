@@ -70,8 +70,7 @@ class NewNRU(nn.Module):
         # lowering of one monolithic graph over the whole sequence. Each distinct (batch, chunk length)
         # shape compiles once, so allow enough cached graphs for variable-length tasks.
         if compile:
-            torch._dynamo.config.cache_size_limit = max(torch._dynamo.config.cache_size_limit, 64)
-            self.run_chunk = torch.compile(self._run_chunk, dynamic=False)
+            self.run_chunk = torch.compile(self._run_chunk, dynamic=False, options={"triton.cudagraphs": False})
         else:
             self.run_chunk = self._run_chunk
 

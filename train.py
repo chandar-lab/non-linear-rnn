@@ -168,6 +168,10 @@ def main():
     np.random.seed(cfg["seed"])
     torch.manual_seed(cfg["seed"])
     torch.set_float32_matmul_precision("high")
+    os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
+    torch.use_deterministic_algorithms(True, warn_only=True)
+    from torch._inductor import config as inductor_config
+    inductor_config.deterministic = True
     device = get_device(cfg["device"])
     autocast = lambda: torch.autocast(device.type, dtype=torch.bfloat16, enabled=tcfg["bf16"])
 
