@@ -54,6 +54,7 @@ class OriginalNRU(nn.Module):
         self.cells = nn.ModuleList([OriginalNRUCell(embed_size, memory_size, num_heads) for _ in range(num_layers)])
         # See models/new_nru.py for why time steps are compiled in chunks.
         if compile:
+            torch._dynamo.config.cache_size_limit = max(torch._dynamo.config.cache_size_limit, 64)
             self.run_chunk = torch.compile(self._run_chunk, dynamic=False, options={"triton.cudagraphs": False})
         else:
             self.run_chunk = self._run_chunk

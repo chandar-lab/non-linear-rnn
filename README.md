@@ -267,6 +267,7 @@ Each run writes to `runs/<name>_<YYYYmmdd-HHMMSS>/`:
 | `checkpoint.pt` | model, optimizer, scheduler, step, data-sampler RNG, torch RNG, wandb run id |
 | `model.pt` | final model `state_dict` |
 | `metrics.json` | final step, validation metrics, and test metrics for tasks with a test split |
+| `code/` | snapshot of the source (`*.py`, `*.json`, `*.toml`; no data, runs or `.venv`) the run was started with; a resume adds `code_resume_step<N>/` |
 
 A checkpoint is saved every `ckpt_interval` steps, at the end, and on Ctrl-C. `--resume RUN_DIR` reloads
 the run's own `config.json` (with any `--set` overrides applied on top), restores all state, and continues

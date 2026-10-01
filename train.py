@@ -10,6 +10,7 @@ import json
 import math
 import os
 import random
+import shutil
 import time
 
 import numpy as np
@@ -132,6 +133,21 @@ def evaluate(model, task, batches, device, autocast, prefix="val"):
     return {f"{prefix}/{k}": v / count for k, v in totals.items()}, sample
 
 
+def snapshot_code(dest, skip_dirs):
+    """Copy the source tree (code and configs only) into dest, so each run keeps the code it ran with."""
+    root = os.path.dirname(os.path.abspath(__file__))
+    skip = {os.path.abspath(d) for d in skip_dirs}
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames if not d.startswith((".", "__")) and d != "wandb"
+                       and os.path.join(dirpath, d) not in skip]
+        for name in filenames:
+            if name.endswith((".py", ".json", ".toml")):
+                src = os.path.join(dirpath, name)
+                dst = os.path.join(dest, os.path.relpath(src, root))
+                os.makedirs(os.path.dirname(dst), exist_ok=True)
+                shutil.copy2(src, dst)
+
+
 def save_checkpoint(path, **state):
     torch.save(state, path + ".tmp")
     os.replace(path + ".tmp", path)
@@ -163,6 +179,8 @@ def main():
     with open(os.path.join(run_dir, "config.json"), "w") as f:
         json.dump(cfg, f, indent=2)
     tcfg = cfg["train"]
+    code_dir = f"code_resume_step{checkpoint['step']}" if checkpoint else "code"
+    snapshot_code(os.path.join(run_dir, code_dir), skip_dirs=[tcfg["out_dir"], cfg["data"]["dir"]])
 
     random.seed(cfg["seed"])
     np.random.seed(cfg["seed"])

@@ -46,6 +46,7 @@ class GRU(nn.Module):
         self.out_norm = RMSNorm(embed_size)
         # See models/new_nru.py for why time steps are compiled in chunks.
         if compile:
+            torch._dynamo.config.cache_size_limit = max(torch._dynamo.config.cache_size_limit, 64)
             self.run_chunk = torch.compile(self._run_chunk, dynamic=False, options={"triton.cudagraphs": False})
         else:
             self.run_chunk = self._run_chunk
