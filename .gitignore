@@ -4,3 +4,6 @@ runs/
 data/
 wandb/
 .ipynb_checkpoints/
+.env
+slurm_logs/*
+!slurm_logs/.gitkeep

@@ -32,6 +32,17 @@ uv run train.py configs/gru_copying.json --set model.compile=false
 uv run train.py --resume runs/new_nru_copying_20260926-120000 --set train.total_steps=200000
 ```
 
+### SLURM
+
+`jobs/` has one sbatch script per run. They read `WANDB_API_KEY` from `.env` (gitignored; copy
+`.env.example`) and write their logs to `slurm_logs/<job name>-<job id>.out`. Submit from the repo root,
+since the log path is relative to where `sbatch` is called:
+
+```bash
+cp .env.example .env   # then fill in WANDB_API_KEY
+sbatch jobs/new_nru_copying.sh
+```
+
 ## Project layout
 
 ```
@@ -56,6 +67,8 @@ tasks/
   associative_recall.py  associative recall
   psmnist.py          permuted sequential MNIST
   data.py             data sources: stream / pregenerated file / fixed dataset
+jobs/                 SLURM sbatch scripts, one per run
+slurm_logs/           SLURM job logs (gitignored)
 runs/                 run outputs (created on first run, gitignored)
 data/                 pregenerated datasets and downloaded MNIST (gitignored)
 ```
