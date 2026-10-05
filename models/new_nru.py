@@ -50,8 +50,8 @@ class NewNRUCell(nn.Module):
         h = F.relu(self.Wi(x) + self.Wh(h) + self.Wc(m))
         features = torch.cat([x, self.norm_h(h), self.norm_m(m)], dim=-1)
         a, b = F.relu(self.f_ab(features)).unsqueeze(-1).chunk(2, dim=1)
-        w = F.relu(F.linear(features, self.f_w_b @ self.f_w_a) + self.b_w).view(-1, self.num_heads, self.memory_size)
-        e = F.relu(F.linear(features, self.f_e_b @ self.f_e_a) + self.b_e).view(-1, self.num_heads, self.memory_size)
+        w = F.normalize(F.relu(F.linear(features, self.f_w_b @ self.f_w_a) + self.b_w).view(-1, self.num_heads, self.memory_size), p=5, dim=-1)
+        e = F.normalize(F.relu(F.linear(features, self.f_e_b @ self.f_e_a) + self.b_e).view(-1, self.num_heads, self.memory_size), p=5, dim=-1)
         m = m + (a * w - b * e).mean(dim=1)
         return h, m
 
