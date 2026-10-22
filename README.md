@@ -318,6 +318,9 @@ with defaults:
 | `train.eval_batch_size` | 256 | |
 | `train.ckpt_interval` | 5000 | |
 | `train.out_dir` | `"runs"` | |
+| `train.rollback_interval` | `null` | snapshot model + optimizer every N steps and restore it on a spike (undone steps still count towards `total_steps`); `null` disables |
+| `train.rollback_factor` | 1000.0 | a spike is a non-finite loss / grad norm, or a grad norm above this times its running mean |
+| `train.rollback_noise` | 0.01 | after a rollback, Gaussian noise with this std relative to each weight tensor's RMS |
 | `wandb.enabled` | false | the provided configs set this to true |
 | `wandb.project` | `"non-linear-rnn"` | |
 | `wandb.entity` | `null` | |

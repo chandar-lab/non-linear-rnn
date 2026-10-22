@@ -1,6 +1,5 @@
 """Gated Recurrent Unit, reset-after variant (same equations as torch.nn.GRU).
 
-Layers are stacked with pre-norm residual connections: u <- u + proj(cell(norm(u))), output = norm(u).
 """
 import torch
 import torch.nn as nn

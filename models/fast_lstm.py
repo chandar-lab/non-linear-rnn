@@ -7,7 +7,6 @@ standard LSTM. The forget bias is initialized so the gate starts where a sigmoid
 forget_bias would, i.e. sigmoid(sinh(b_f)) = sigmoid(forget_bias), b_f = asinh(forget_bias); the paper
 uses forget_bias = 1.
 
-Layers are stacked with pre-norm residual connections: u <- u + proj(cell(norm(u))), output = norm(u).
 """
 import math
 import torch
@@ -33,9 +32,7 @@ class FastLSTMCell(nn.Module):
 
     def forward(self, x, h, c):
         i, f, g, o = (self.Wx(x) + self.Wh(h)).chunk(4, dim=-1)
-        # Clamping doesn't change the value (sigmoid(sinh(20)) is exactly 1 in fp32) but keeps sinh / cosh
-        # finite, so the backward pass can't produce 0 * inf = NaN for very large pre-activations.
-        f = torch.sigmoid(torch.sinh(f.clamp(-20, 20)))
+        f = torch.sigmoid(torch.sinh(f))
         c = f * c + torch.sigmoid(i) * torch.tanh(g)
         h = torch.sigmoid(o) * torch.tanh(c)
         return h, c

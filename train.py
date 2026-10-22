@@ -51,6 +51,9 @@ DEFAULTS = {
         "eval_batch_size": 256,
         "ckpt_interval": 5000,
         "out_dir": "runs",
+        "rollback_interval": None,  # snapshot every N steps, restore it on a spike; None disables
+        "rollback_factor": 1000.0,    # spike: non-finite loss / grad norm, or grad norm > factor * its running mean
+        "rollback_noise": 0.01,     # after a rollback, add Gaussian noise of this std (relative to each tensor's RMS)
     },
     "wandb": {"enabled": False, "project": "non-linear-rnn", "entity": None, "group": None, "tags": []},
 }
@@ -167,7 +170,7 @@ def main():
     if args.resume:
         run_dir = args.resume.rstrip("/")
         with open(os.path.join(run_dir, "config.json")) as f:
-            cfg = json.load(f)
+            cfg = merge(DEFAULTS, json.load(f))  # fills keys added since the run started
         checkpoint = torch.load(os.path.join(run_dir, "checkpoint.pt"), map_location="cpu", weights_only=False)
     else:
         with open(args.config) as f:
@@ -230,6 +233,15 @@ def main():
                         data_rng=train_source.generator.get_state(), torch_rng=torch.get_rng_state(),
                         wandb_id=logger.wandb_id)
 
+    # Rollback: keep an in-memory snapshot of the model and optimizer, refreshed every rollback_interval healthy
+    # steps. A spike restores it (and perturbs the weights so the run takes a different path) before the bad
+    # update is applied. The step counter never goes back, so undone steps still count towards total_steps.
+    rollback = tcfg["rollback_interval"]
+    take_snapshot = lambda: {"step": step, "model": copy.deepcopy(model.state_dict()),
+                             "optimizer": copy.deepcopy(optimizer.state_dict())}
+    snapshot = take_snapshot() if rollback else None
+    grad_norm_avg, rollbacks, consecutive_rollbacks = None, 0, 0
+
     # ---- training loop ----
     logger.start(tcfg["total_steps"], step)
     max_norm = tcfg["max_grad_norm"] or float("inf")
@@ -248,9 +260,32 @@ def main():
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
             grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm)
+            if rollback:
+                loss_val, norm_val = loss.item(), grad_norm.item()
+                spike = not (math.isfinite(loss_val) and math.isfinite(norm_val)) or (
+                    grad_norm_avg is not None and norm_val > tcfg["rollback_factor"] * grad_norm_avg)
+                if spike:
+                    model.load_state_dict(snapshot["model"])
+                    # Copy again: load_state_dict keeps the given tensors, and the optimizer updates them in place.
+                    optimizer.load_state_dict(copy.deepcopy(snapshot["optimizer"]))
+                    with torch.no_grad():
+                        for p in model.parameters():
+                            p.add_(torch.randn_like(p) * tcfg["rollback_noise"] * p.pow(2).mean().sqrt())
+                    rollbacks += 1
+                    consecutive_rollbacks += 1
+                    logger.print(f"[yellow]spike at step {step + 1}[/] (loss {loss_val:.3g}, grad norm {norm_val:.3g}, "
+                                 f"running mean {grad_norm_avg or float('nan'):.3g}), rolled back to step {snapshot['step']}")
+                    if consecutive_rollbacks >= 10:
+                        logger.print(f"[bold red]10 rollbacks in a row to step {snapshot['step']}, stopping")
+                        break
+                    continue
+                consecutive_rollbacks = 0
+                grad_norm_avg = norm_val if grad_norm_avg is None else 0.99 * grad_norm_avg + 0.01 * norm_val
             optimizer.step()
             scheduler.step()
             step += 1
+            if rollback and step % rollback == 0:
+                snapshot = take_snapshot()
             running_loss += loss.detach()
             running_steps += 1
             tokens += x.numel()
@@ -267,6 +302,8 @@ def main():
                     "perf/steps_per_sec": running_steps / elapsed,
                     "perf/tokens_per_sec": tokens / elapsed,
                 }
+                if rollback:
+                    metrics["train/rollbacks"] = rollbacks
                 if device.type == "cuda":
                     metrics["perf/max_mem_gb"] = torch.cuda.max_memory_allocated(device) / 1e9
                 logger.log_train(step, metrics, print_line=bool(print_interval) and step % print_interval == 0)
